@@ -32,15 +32,21 @@ function writeToLog(ev, val, currMHealth, currPHealth) {
 
   completeLogEntry.push(logEntry);
 }
-
-let initHealth = prompt("Enter Starting Health Values.");
-
-let MAX_HEALTH = parseInt(initHealth);
 let bonusLife = true;
 
-if (isNaN(MAX_HEALTH) || MAX_HEALTH <= 0) {
-  MAX_HEALTH = 100;
+function checkInput() {
+  let initHealth = prompt("Enter Starting Health Values.");
+
+  let HEALTH = parseInt(initHealth);
+
+  if (isNaN(HEALTH) || HEALTH <= 0) {
+    alert("Invalid Input, Refresh and enter valid value.");
+    throw { Message: "Invalid Input, Enter a Number!" };
+  }
+  return HEALTH;
 }
+
+let MAX_HEALTH = checkInput();
 let currentPlayerHealth = MAX_HEALTH;
 let currentMonsterHealth = MAX_HEALTH;
 
@@ -88,16 +94,18 @@ function attackSelector(attack) {
     writeToLog(EVENT_GAME_OVER, 0, currentMonsterHealth, currentPlayerHealth);
 
     alert("Game is restarting...");
-    resetValue();
+
+    resetValue(checkInput());
     completeLogEntry = [];
   }
 }
 
-function resetValue() {
-  currentPlayerHealth = MAX_HEALTH;
-  currentMonsterHealth = MAX_HEALTH;
+function resetValue(val) {
+  currentPlayerHealth = val;
+  currentMonsterHealth = val;
+  adjustHealthBars(val);
 
-  resetGame(MAX_HEALTH);
+  resetGame(val);
 }
 
 function attackHandler() {
@@ -106,15 +114,17 @@ function attackHandler() {
 
 function healHandler() {
   const diff = MAX_HEALTH - currentPlayerHealth;
-  if (diff < HEAL) {
-    increasePlayerHealth(diff);
-    currentPlayerHealth += diff;
-    writeToLog(EVENT_HEALING, diff, currentMonsterHealth, currentPlayerHealth);
-  } else {
-    increasePlayerHealth(HEAL);
-    currentPlayerHealth += HEAL;
-    writeToLog(EVENT_HEALING, HEAL, currentMonsterHealth, currentPlayerHealth);
-  }
+
+  let healValue = diff < HEAL ? diff : HEAL;
+  increasePlayerHealth(healValue);
+  currentPlayerHealth += healValue;
+  writeToLog(
+    EVENT_HEALING,
+    healValue,
+    currentMonsterHealth,
+    currentPlayerHealth
+  );
+
   const Pdamage = dealPlayerDamage(MONSTER_ATTACK);
   currentPlayerHealth -= Pdamage;
   writeToLog(
